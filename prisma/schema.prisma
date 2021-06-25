@@ -1,0 +1,27 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model stocks {
+  id                   Int      @id @default(autoincrement())
+  name                 String
+  price                Float
+  price_delta_d        Float
+  today_prices         String
+  active               Boolean
+  importance           Int
+  macd_5_hist          Float
+  macd_5_last_cross    DateTime
+  macd_d_hist          Float
+  macd_d_last_cross    DateTime
+  rsi_5                Float
+  last_price_update_at DateTime
+}
