@@ -1,82 +1,120 @@
-import Head from 'next/head'
+import { useState } from "react";
+import Head from "next/head";
+import { Fragment } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import {
+  BookmarkAltIcon,
+  FireIcon,
+  HomeIcon,
+  InboxIcon,
+  MenuIcon,
+  UserIcon,
+  XIcon,
+} from "@heroicons/react/outline";
+import prisma from "../lib/prisma";
+import moment from "moment";
+import { useRouter } from "next/router";
 
-export default function Home() {
+import StockList from "../components/stockList";
+import Layout from "../components/layout";
+import { useEffect } from "react";
+
+export async function getServerSideProps() {
+  let stocks = await prisma.stocks.findMany({
+    orderBy: [
+      {
+        importance: "desc",
+      },
+      {
+        name: "asc",
+      },
+    ],
+  });
+
+  stocks = stocks.map((item) => {
+    return {
+      ...item,
+      last_price_update_at: moment(item.last_price_update_at).toISOString(),
+      macd_5_last_cross: moment(item.macd_5_last_cross).toISOString(),
+      macd_d_last_cross: moment(item.macd_d_last_cross).toISOString(),
+    };
+  });
+  const timeNY = moment().utcOffset(-4);
+  return { props: { stocks, timeNY: timeNY.format("HH:mm") } };
+}
+
+export default function Home(props) {
+  const router = useRouter();
+
+  const [stocks, setStocks] = useState(props.stocks);
+  const [timeNY, setTimeNY] = useState("");
+
+  function connect() {
+    var host = location.origin.replace(/^http/, "ws").replace("3000", "5000");
+    var ws = new WebSocket(host);
+
+    ws.onclose = function (e) {
+      console.log(
+        "Socket is closed. Reconnect will be attempted in 1 second.",
+        e.reason
+      );
+      setTimeout(function () {
+        connect();
+      }, 1000);
+    };
+
+    ws.onerror = function (err) {
+      console.error(
+        "Socket encountered error: ",
+        err.message,
+        "Closing socket"
+      );
+      ws.close();
+    };
+
+    ws.onmessage = function (event) {
+      const data = JSON.parse(event.data);
+      setTimeNY(moment(data.time).format("HH:mm:ss"));
+      const newStocks = stocks.map((stock) => {
+        if (data[stock.name] != null) {
+          stock = data[stock.name];
+        }
+        return stock;
+      });
+      setStocks(newStocks);
+    };
+  }
+
+  useEffect(() => {
+    setStocks(props.stocks);
+    connect();
+  }, []);
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-2">
+    <div className="">
       <Head>
-        <title>Create Next App</title>
+        <title>RodriguezLab Stocks</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="flex flex-col items-center justify-center w-full flex-1 px-20 text-center">
-        <h1 className="text-6xl font-bold">
-          Welcome to{' '}
-          <a className="text-blue-600" href="https://nextjs.org">
-            Next.js!
-          </a>
-        </h1>
+      <div id="pings"></div>
 
-        <p className="mt-3 text-2xl">
-          Get started by editing{' '}
-          <code className="p-3 font-mono text-lg bg-gray-100 rounded-md">
-            pages/index.js
-          </code>
-        </p>
+      <Layout timeNY={timeNY}>
+        <div className="flex-1 flex items-stretch overflow-hidden">
+          <main className="hidden lg:block flex-1 overflow-y-auto">
+            {/* Primary column */}
+            <section
+              aria-labelledby="primary-heading"
+              className="min-w-0 flex-1 h-full flex flex-col overflow-y-auto lg:order-last"
+            >
+              <StockList stocks={stocks} />
+            </section>
+          </main>
 
-        <div className="flex flex-wrap items-center justify-around max-w-4xl mt-6 sm:w-full">
-          <a
-            href="https://nextjs.org/docs"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Documentation &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Find in-depth information about Next.js features and API.
-            </p>
-          </a>
-
-          <a
-            href="https://nextjs.org/learn"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Learn &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Learn about Next.js in an interactive course with quizzes!
-            </p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Examples &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Discover and deploy boilerplate example Next.js projects.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Deploy &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+          {/* Secondary column (hidden on smaller screens) */}
+          <aside className=" w-96 bg-white border-l border-gray-200 overflow-y-auto overflow-x-hidden "></aside>
         </div>
-      </main>
-
-      <footer className="flex items-center justify-center w-full h-24 border-t">
-        <a
-          className="flex items-center justify-center"
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className="h-4 ml-2" />
-        </a>
-      </footer>
+      </Layout>
     </div>
-  )
+  );
 }
