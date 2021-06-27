@@ -50,7 +50,10 @@ export default function Home(props) {
   const [timeNY, setTimeNY] = useState("");
 
   function connect() {
-    var host = location.origin.replace(/^http/, "ws").replace("3000", "5000");
+    var host = process.env.API_URL.replace(/^http/, "ws").replace(
+      "3000",
+      "5000"
+    );
     var ws = new WebSocket(host);
 
     ws.onclose = function (e) {
