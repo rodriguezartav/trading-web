@@ -50,7 +50,7 @@ export default function Home(props) {
   const [timeNY, setTimeNY] = useState("");
 
   function connect() {
-    var host = process.env.API_URL.replace(/^http/, "ws").replace(
+    var host = process.env.NEXT_PUBLIC_API_URL.replace(/^http/, "ws").replace(
       "3000",
       "5000"
     );
