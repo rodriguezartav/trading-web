@@ -16,6 +16,8 @@ import moment from "moment";
 import { useRouter } from "next/router";
 
 import StockList from "../components/stockList";
+import Stock from "../components/stock";
+import Orders from "../components/orders";
 import Layout from "../components/layout";
 import { useEffect } from "react";
 
@@ -31,29 +33,42 @@ export async function getServerSideProps() {
     ],
   });
 
+  let orders = await prisma.orders.findMany({});
+
   stocks = stocks.map((item) => {
     return {
       ...item,
+      minute_prices_deltas: item.minute_prices_deltas || "",
       last_price_update_at: moment(item.last_price_update_at).toISOString(),
       macd_5_last_cross: moment(item.macd_5_last_cross).toISOString(),
       macd_d_last_cross: moment(item.macd_d_last_cross).toISOString(),
+      macd_30_last_cross: moment(item.macd_30_last_cross).toISOString(),
     };
   });
+
+  orders = orders.map((item) => {
+    return {
+      ...item,
+      description: item.description || "",
+      created_at: moment(item.created_at).toISOString(),
+      updated_at: moment(item.updated_at).toISOString(),
+    };
+  });
+
   const timeNY = moment().utcOffset(-4);
-  return { props: { stocks, timeNY: timeNY.format("HH:mm") } };
+  return { props: { orders, stocks, timeNY: timeNY.format("HH:mm") } };
 }
 
 export default function Home(props) {
   const router = useRouter();
 
   const [stocks, setStocks] = useState(props.stocks);
+  const [orders, setOrders] = useState(props.orders);
+  const [stock, setStock] = useState();
   const [timeNY, setTimeNY] = useState("");
 
   function connect() {
-    var host = process.env.NEXT_PUBLIC_API_URL.replace(/^http/, "ws").replace(
-      "3000",
-      "5000"
-    );
+    var host = process.env.NEXT_PUBLIC_WS_API_URL.replace(/^http/, "ws");
     var ws = new WebSocket(host);
 
     ws.onclose = function (e) {
@@ -77,14 +92,29 @@ export default function Home(props) {
 
     ws.onmessage = function (event) {
       const data = JSON.parse(event.data);
-      setTimeNY(moment(data.time).format("HH:mm:ss"));
+      setTimeNY(moment(data.time).utcOffset(-4).format("HH:mm:ss"));
+
       const newStocks = stocks.map((stock) => {
-        if (data[stock.name] != null) {
-          stock = data[stock.name];
+        if (data.stocks[stock.name] != null) {
+          stock = data.stocks[stock.name];
         }
         return stock;
       });
       setStocks(newStocks);
+
+      data.orders = data.orders.map((item) => {
+        return {
+          ...item,
+          timeAgo: moment().diff(moment(item.updated_at), "s"),
+        };
+      });
+      data.orders.sort((a, b) => {
+        if (a.timeAgo > b.timeAgo) return 1;
+        else if (b.timeAgo > a.timeAgo) return -1;
+        return 0;
+      });
+
+      setOrders(data.orders);
     };
   }
 
@@ -92,6 +122,10 @@ export default function Home(props) {
     setStocks(props.stocks);
     connect();
   }, []);
+
+  function onSelectStock(stonk) {
+    setStock(stonk);
+  }
 
   return (
     <div className="">
@@ -110,12 +144,14 @@ export default function Home(props) {
               aria-labelledby="primary-heading"
               className="min-w-0 flex-1 h-full flex flex-col overflow-y-auto lg:order-last"
             >
-              <StockList stocks={stocks} />
+              <StockList onSelectStock={onSelectStock} stocks={stocks} />
             </section>
           </main>
 
           {/* Secondary column (hidden on smaller screens) */}
-          <aside className=" w-96 bg-white border-l border-gray-200 overflow-y-auto overflow-x-hidden "></aside>
+          <aside className=" p-5 w-96 bg-white border-l border-gray-200 overflow-y-auto overflow-x-hidden ">
+            <Orders stocks={stocks} orders={orders} />
+          </aside>
         </div>
       </Layout>
     </div>

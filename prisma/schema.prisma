@@ -14,14 +14,41 @@ model stocks {
   id                   Int      @id @default(autoincrement())
   name                 String
   price                Float
+  price_delta_1        Float
+  price_delta_5        Float
+  price_delta_30       Float
+  price_delta_90       Float
   price_delta_d        Float
+  price_delta_2d       Float
   today_prices         String
+  month_prices         String
   active               Boolean
   importance           Int
   macd_5_hist          Float
+  minute_prices_deltas String
   macd_5_last_cross    DateTime
   macd_d_hist          Float
   macd_d_last_cross    DateTime
+  macd_30_hist         Float
+  macd_30_last_cross   DateTime
   rsi_5                Float
+  rsi_30               Float
+  rsi_d                Float
+  ema_d_200            Float
+  ema_d_50             Float
+  amount               Float
+  average_price        Float
   last_price_update_at DateTime
+}
+
+model orders {
+  id          Int      @id @default(autoincrement())
+  stock_id    Int
+  price_limit Float
+  quantity    Float
+  status      String
+  description String
+  created_at  DateTime
+  updated_at  DateTime
+  type        String
 }
