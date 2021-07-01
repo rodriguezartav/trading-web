@@ -36,11 +36,7 @@ import MarketOpen from "../components/marketOpen";
 
 const sidebarNavigation = [
   { name: "Home", href: "#", icon: HomeIcon, current: false },
-  { name: "All Files", href: "#", icon: ViewGridIcon, current: false },
-  { name: "Photos", href: "#", icon: PhotographIcon, current: true },
-  { name: "Shared", href: "#", icon: UserGroupIcon, current: false },
-  { name: "Albums", href: "#", icon: CollectionIcon, current: false },
-  { name: "Settings", href: "#", icon: CogIcon, current: false },
+  //{ name: "All Files", href: "#", icon: ViewGridIcon, current: false },
 ];
 const userNavigation = [
   { name: "Your Profile", href: "#" },
