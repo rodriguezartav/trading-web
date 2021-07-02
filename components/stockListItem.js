@@ -77,7 +77,7 @@ export default function StockList(props) {
             <div className="text-sm font-medium text-gray-900">
               <div className="text-sm text-gray-500">{stock.name}</div>
               <span className={`inline-flex text-xs leading-5 font-semibold `}>
-                {stock.amount} {stock.average_price}
+                {toDecimal(stock.ema_d_50)} {toDecimal(stock.ema_d_200)}
               </span>
             </div>
           </div>
@@ -350,4 +350,10 @@ function priceDiff(b, a) {
   if (a < b) deltaD = ((b - a) / b) * -100;
   else deltaD = ((a - b) / b) * 100;
   return parseInt(deltaD * 100) / 100;
+}
+
+function toDecimal(value, decimal = 2) {
+  if (decimal == 1) return parseInt(value * 10) / 10;
+  if (decimal == 2) return parseInt(value * 100) / 100;
+  else return parseInt(value);
 }
