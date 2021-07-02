@@ -73,18 +73,26 @@ export default function StockList(props) {
     <tr onClick={onSelectStock} key={props.stock.id}>
       <td className="px-2 py-1 whitespace-nowrap overflow-hidden max-h-12">
         <div className="flex items-center">
-          <div className="ml-4">
-            <div className="text-sm font-medium text-gray-900">
-              <div className="text-sm text-gray-500">{stock.name}</div>
+          <div className={`ml-4  `}>
+            <div className="text-sm font-medium">
+              <div className={`text-sm `}>{stock.name}</div>
+
               <span className={`inline-flex text-xs leading-5 font-semibold `}>
-                {toDecimal(stock.ema_d_50)} {toDecimal(stock.ema_d_200)}
+                ${numeral(stock.price).format("0,0.00")}{" "}
+              </span>
+              <span
+                className={`pl-1  text-xs inline-block ${
+                  stock.price_delta_d > 0 ? "text-green-500" : "text-red-500"
+                }`}
+              >
+                {toDecimal(stock.price_delta_d)}%
               </span>
             </div>
           </div>
         </div>
       </td>
 
-      <td className="px-6 py-1 whitespace-nowrap overflow-hidden max-h-12">
+      <td className="px-4 py-1 whitespace-nowrap overflow-hidden max-h-12">
         <LineChart
           margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
           width={100}
@@ -312,16 +320,12 @@ export default function StockList(props) {
         <div className="flex items-center">
           <div className="ml-4">
             <div className="text-sm font-medium text-gray-900">
-              <div className="text-sm text-gray-500">
-                ${numeral(stock.price).format("0,0.00")}
-              </div>
+              <div className="text-sm text-gray-500"></div>
               <span
                 className={`inline-flex text-xs leading-5 font-semibold  ${
                   stock.price_delta_d > 0 ? "text-green-500" : "text-red-500"
                 }`}
-              >
-                {stock.price_delta_d} %{" "}
-              </span>
+              ></span>
             </div>
           </div>
         </div>
@@ -353,7 +357,5 @@ function priceDiff(b, a) {
 }
 
 function toDecimal(value, decimal = 2) {
-  if (decimal == 1) return parseInt(value * 10) / 10;
-  if (decimal == 2) return parseInt(value * 100) / 100;
-  else return parseInt(value);
+  return numeral(value).format("0,0.00");
 }

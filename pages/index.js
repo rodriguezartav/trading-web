@@ -138,7 +138,7 @@ export default function Home(props) {
 
       <Layout timeNY={timeNY}>
         <div className="flex-1 flex items-stretch overflow-hidden">
-          <main className="hidden lg:block flex-1 overflow-y-auto">
+          <main className="sm:block flex-1 overflow-y-auto">
             {/* Primary column */}
             <section
               aria-labelledby="primary-heading"
@@ -149,7 +149,7 @@ export default function Home(props) {
           </main>
 
           {/* Secondary column (hidden on smaller screens) */}
-          <aside className=" p-5 w-96 bg-white border-l border-gray-200 overflow-y-auto overflow-x-hidden ">
+          <aside className=" p-5 w-96 hidden lg:block bg-white border-l border-gray-200 overflow-y-auto overflow-x-hidden ">
             {stock && <Stock stock={stock} />}
             <Orders stocks={stocks} orders={orders} />
           </aside>
