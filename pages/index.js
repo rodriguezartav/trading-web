@@ -150,6 +150,7 @@ export default function Home(props) {
 
           {/* Secondary column (hidden on smaller screens) */}
           <aside className=" p-5 w-96 bg-white border-l border-gray-200 overflow-y-auto overflow-x-hidden ">
+            {stock && <Stock stock={stock} />}
             <Orders stocks={stocks} orders={orders} />
           </aside>
         </div>

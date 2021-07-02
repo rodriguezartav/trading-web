@@ -20,6 +20,9 @@ model stocks {
   price_delta_90       Float
   price_delta_d        Float
   price_delta_2d       Float
+  price_delta_3d       Float
+  price_delta_4d       Float
+  price_delta_5d       Float
   today_prices         String
   month_prices         String
   active               Boolean
